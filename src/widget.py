@@ -27,7 +27,7 @@ def mask_account_card(account_info: str) -> str:
 
 def get_date(iso_date: str) -> str:
     """
-    Преобразует дату из формата ISO 8601 в формат "ДД.ММ.ГГГГ".
+    Преобразует дату в формат "ДД.ММ.ГГГГ".
 
     """
     try:
