@@ -30,9 +30,4 @@ def get_date(iso_date: str) -> str:
     Преобразует дату в формат "ДД.ММ.ГГГГ".
 
     """
-    try:
-        dt = datetime.fromisoformat(iso_date)
-        return dt.strftime("%d.%m.%Y")
-    except ValueError as e:
-        raise ValueError(f"Неверный формат даты: {iso_date}") from e
-
+    return datetime.fromisoformat(iso_date).strftime('%d.%m.%Y')
