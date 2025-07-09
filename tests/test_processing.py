@@ -18,3 +18,12 @@ def sample_transactions():
 def test_filter_by_state(sample_transactions, state, expected_ids):
     result = filter_by_state(sample_transactions, state)
     assert [t["id"] for t in result] == expected_ids
+
+
+@pytest.mark.parametrize("reverse, expected_order", [
+    (True, [3, 2, 1]),  # По убыванию
+    (False, [1, 2, 3]),  # По возрастанию
+])
+def test_sort_by_date(sample_transactions, reverse, expected_order):
+    result = sort_by_date(sample_transactions, reverse=reverse)
+    assert [t["id"] for t in result] == expected_order
