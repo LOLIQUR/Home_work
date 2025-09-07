@@ -10,6 +10,7 @@ def sample_transactions():
         {"id": 3, "state": "EXECUTED", "date": "2023-01-03"},
     ]
 
+
 @pytest.mark.parametrize("state, expected_ids", [
     ("EXECUTED", [1, 3]),
     ("CANCELED", [2]),
@@ -21,8 +22,8 @@ def test_filter_by_state(sample_transactions, state, expected_ids):
 
 
 @pytest.mark.parametrize("reverse, expected_order", [
-    (True, [3, 2, 1]),  # По убыванию
-    (False, [1, 2, 3]),  # По возрастанию
+    (True, [3, 2, 1]),
+    (False, [1, 2, 3]),
 ])
 def test_sort_by_date(sample_transactions, reverse, expected_order):
     result = sort_by_date(sample_transactions, reverse=reverse)
