@@ -1,10 +1,11 @@
 def get_mask_card_number(card_number: str) -> str:
     """
     Маскирует номер банковской карты, оставляя первые 6 и последние 4 цифры.
-    Остальные заменяются на '*'.
+    Всегда возвращает 4 группы по 4 цифры, добавляя **** при необходимости.
 
-    Пример:
+    Примеры:
         1234567890123456 → 1234 56** **** 3456
+        123456789012 → 1234 56** **** 9012
     """
     digits_only = ''.join(c for c in card_number if c.isdigit())
 
@@ -13,11 +14,8 @@ def get_mask_card_number(card_number: str) -> str:
 
     first_six = digits_only[:6]
     last_four = digits_only[-4:]
-    masked_middle = '*' * (len(digits_only) - 10)
-    grouped = first_six + masked_middle + last_four
 
-    # Разбиваем по 4 цифры
-    return ' '.join(grouped[i:i + 4] for i in range(0, len(grouped), 4))
+    return f"{first_six[:4]} {first_six[4:6]}** **** {last_four}"
 
 
 def get_mask_account(account_number: str) -> str:

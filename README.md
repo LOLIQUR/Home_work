@@ -47,6 +47,12 @@ print(mask_account_card("Visa 1234567890123456"))  # "Visa 1234 56** **** 3456"
 print(get_date("2023-01-01T12:00:00"))  # "01.01.2023"
 ```
 
+## � Тестирование
+
+- Запуск тестов: `pytest --cov=src`
+- Отчёт о покрытии: `pytest --cov=src --cov-report=html` → откройте `htmlcov/index.html`
+- Проверка стиля: `flake8 src && mypy src`
+
 ## Команда проекта
 
 - Семенов Данил <mrjunkboy@vk.com>
