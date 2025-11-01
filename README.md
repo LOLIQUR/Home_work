@@ -47,6 +47,50 @@ print(mask_account_card("Visa 1234567890123456"))  # "Visa 1234 56** **** 3456"
 print(get_date("2023-01-01T12:00:00"))  # "01.01.2023"
 ```
 
+## Модуль generators
+
+Модуль предоставляет генераторы для работы с банковскими транзакциями.
+
+### Функции:
+
+#### `filter_by_currency(transactions, currency)`
+Фильтрует транзакции по заданной валюте и возвращает итератор.
+
+```python
+from src.generators import filter_by_currency
+
+usd_transactions = filter_by_currency(transactions, "USD")
+for transaction in usd_transactions:
+    print(transaction["id"])
+```
+
+#### `transaction_descriptions(transactions)`
+Генератор, который возвращает описания транзакций по очереди.
+
+```python
+from src.generators import transaction_descriptions
+
+descriptions = transaction_descriptions(transactions)
+for description in descriptions:
+    print(description)
+```
+
+#### `card_number_generator(start, end)`
+Генератор номеров банковских карт в формате XXXX XXXX XXXX XXXX.
+
+```python
+from src.generators import card_number_generator
+
+for card_number in card_number_generator(1, 5):
+    print(card_number)
+# Вывод:
+# 0000 0000 0000 0001
+# 0000 0000 0000 0002
+# 0000 0000 0000 0003
+# 0000 0000 0000 0004
+# 0000 0000 0000 0005
+```
+
 ## Команда проекта
 
 - Семенов Данил <mrjunkboy@vk.com>
