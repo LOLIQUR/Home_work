@@ -14,7 +14,11 @@ def filter_by_currency(transactions, currency):
     Returns:
         Итератор, выдающий транзакции в заданной валюте
     """
-    pass
+    for transaction in transactions:
+        operation_amount = transaction.get("operationAmount", {})
+        currency_info = operation_amount.get("currency", {})
+        if currency_info.get("code") == currency:
+            yield transaction
 
 
 def transaction_descriptions(transactions):
