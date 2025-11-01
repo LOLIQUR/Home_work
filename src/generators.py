@@ -40,10 +40,15 @@ def card_number_generator(start, end):
     Генератор номеров банковских карт.
 
     Args:
-        start: Начальный номер карты
-        end: Конечный номер карты
+        start: Начальный номер карты (целое число)
+        end: Конечный номер карты (целое число)
 
     Yields:
         Номера карт в формате XXXX XXXX XXXX XXXX
     """
-    pass
+    for number in range(start, end + 1):
+        # Преобразуем число в строку и заполняем нулями до 16 цифр
+        card_str = str(number).zfill(16)
+        # Форматируем в группы по 4 цифры
+        formatted_card = " ".join([card_str[i:i + 4] for i in range(0, 16, 4)])
+        yield formatted_card
