@@ -31,7 +31,8 @@ def transaction_descriptions(transactions):
     Yields:
         Описание каждой транзакции
     """
-    pass
+    for transaction in transactions:
+        yield transaction.get("description", "")
 
 
 def card_number_generator(start, end):
