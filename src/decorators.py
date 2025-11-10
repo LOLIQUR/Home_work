@@ -2,7 +2,6 @@
 Модуль для работы с декораторами.
 """
 import functools
-from datetime import datetime
 
 
 def log(filename=None):
@@ -16,7 +15,7 @@ def log(filename=None):
         Декорированную функцию
     """
     def decorator(func):
-        @functools.wraps(func)
+        @functools.wraps(func)  # Здесь используется functools!
         def wrapper(*args, **kwargs):
             # Формируем сообщение о вызове функции
             func_name = func.__name__
