@@ -91,6 +91,50 @@ for card_number in card_number_generator(1, 5):
 # 0000 0000 0000 0005
 ```
 
+## Модуль decorators
+
+Модуль предоставляет декораторы для логирования работы функций.
+
+### Декораторы:
+
+#### `log(filename=None)`
+Декоратор для автоматического логирования работы функций.
+
+**Параметры:**
+- `filename` (str, optional): Имя файла для записи логов. Если не указан, логи выводятся в консоль.
+
+**Примеры использования:**
+
+```python
+from src.decorators import log
+
+# Логирование в консоль
+@log()
+def add(a, b):
+    return a + b
+
+add(2, 3)  # Вывод в консоль: "add ok"
+
+# Логирование в файл
+@log(filename="operations.log")
+def multiply(x, y):
+    return x * y
+
+multiply(4, 5)  # Запись в файл: "multiply ok"
+
+# Логирование ошибок
+@log()
+def divide(a, b):
+    return a / b
+
+divide(10, 0)  # Вывод в консоль: "divide error: ZeroDivisionError. Inputs: (10, 0), {}"
+```
+
+**Формат логов:**
+- При успешном выполнении: `"имя_функции ok"`
+- При ошибке: `"имя_функции error: тип_ошибки. Inputs: (аргументы), {ключевые_аргументы}"`
+
+
 ## Команда проекта
 
 - Семенов Данил <mrjunkboy@vk.com>
