@@ -20,24 +20,13 @@ def get_exchange_rate(base_currency: str) -> float:
     Returns:
         Курс валюты к рублю
     """
-    api_key = os.getenv("EXCHANGE_API_KEY")
-    if not api_key:
-        raise ValueError("API key not found. Check your .env file.")
-
-    url = f"http://api.exchangeratesapi.io/v1/latest"
-    params = {
-        "access_key": api_key,
-        "base": base_currency,
-        "symbols": "RUB"
-    }
+    # Используем бесплатный API без ключа
+    url = f"https://api.exchangerate-api.com/v4/latest/{base_currency}"
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-
-        if not data.get("success"):
-            raise ValueError(f"API error: {data.get('error', {}).get('info', 'Unknown error')}")
 
         rub_rate = data["rates"].get("RUB")
         if not rub_rate:
@@ -46,6 +35,10 @@ def get_exchange_rate(base_currency: str) -> float:
         return rub_rate
 
     except requests.RequestException as e:
+        # Преобразуем RequestException в ValueError
+        raise ValueError(f"Failed to fetch exchange rate: {str(e)}")
+    except Exception as e:
+        # Любые другие ошибки тоже преобразуем в ValueError
         raise ValueError(f"Failed to fetch exchange rate: {str(e)}")
 
 
@@ -74,9 +67,10 @@ def convert_to_ruble(transaction: Dict[str, Any]) -> float:
             rate = get_exchange_rate(currency)
             return amount * rate
         except ValueError as e:
-            # В случае ошибки API возвращаем 0 и логируем ошибку
-            print(f"Error converting {currency} to RUB: {e}")
-            return 0.0
+            # В случае ошибки API используем запасной курс
+            print(f"Warning: Using fallback rate for {currency}: {e}")
+            fallback_rates = {"USD": 90.0, "EUR": 100.0}
+            return amount * fallback_rates.get(currency, 90.0)
 
     # Если неизвестная валюта - возвращаем 0
     return 0.0
