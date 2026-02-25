@@ -3,7 +3,11 @@
 """
 import os
 import requests
+from dotenv import load_dotenv
 from typing import Dict, Any
+
+# Загружаем переменные окружения из .env файла
+load_dotenv()
 
 
 def convert_to_ruble(transaction: Dict[str, Any]) -> float:
@@ -29,11 +33,16 @@ def convert_to_ruble(transaction: Dict[str, Any]) -> float:
     if currency in ["USD", "EUR"]:
         api_key = os.getenv("EXCHANGE_API_KEY")
         if not api_key:
-            raise ValueError("API key not found")
+            raise ValueError("API key not found. Check your .env file.")
 
-        # Здесь будет запрос к API (пока заглушка)
+        # Здесь будет реальный запрос к API
         # TODO: Реализовать запрос к Exchange Rates Data API
-        return amount * 90  # Временно: 1 USD/EUR = 90 RUB
+        try:
+            # Пока заглушка, позже заменим на реальный API запрос
+            # response = requests.get(...)
+            return amount * 90  # Временно: 1 USD/EUR = 90 RUB
+        except requests.RequestException:
+            raise ValueError("Failed to fetch exchange rate")
 
     # Если неизвестная валюта - возвращаем 0
     return 0.0
