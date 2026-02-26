@@ -60,15 +60,12 @@ def convert_to_ruble(transaction: Dict[str, Any]) -> float:
         # Проверяем успешность запроса
         if not data.get("success"):
             error_info = data.get('error', {}).get('info', 'Unknown API error')
-            raise ValueError(f"API error: {error_info}")
+            print(f"API error: {error_info}")
+            return 0.0
 
-        # Возвращаем готовый результат конвертации (уже в рублях)
         return float(data["result"])
 
-    except requests.RequestException as e:
-        # В случае ошибки сети возвращаем 0 (по условию задания)
-        print(f"Network error during currency conversion: {e}")
-        return 0.0
-    except (KeyError, ValueError) as e:
-        print(f"Error parsing API response: {e}")
+    except Exception as e:
+        # ЛОВИМ ВСЕ исключения!
+        print(f"Error during currency conversion: {type(e).__name__}: {e}")
         return 0.0
