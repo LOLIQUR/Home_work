@@ -3,7 +3,7 @@
 """
 import pytest
 from unittest.mock import patch, MagicMock
-from src.external_api import convert_to_ruble, get_exchange_rate
+from src.external_api import convert_to_ruble
 
 
 class TestExternalAPI:
@@ -21,82 +21,8 @@ class TestExternalAPI:
         assert result == 1000.50
         assert isinstance(result, float)
 
-    @patch('src.external_api.get_exchange_rate')
-    def test_convert_eur_transaction_success(self, mock_get_rate):
-        """Тест успешной конвертации EUR транзакции с Mock."""
-        mock_get_rate.return_value = 100.5
-
-        transaction = {
-            "operationAmount": {
-                "amount": "50.00",
-                "currency": {"code": "EUR"}
-            }
-        }
-        result = convert_to_ruble(transaction)
-
-        assert result == 50.00 * 100.5
-        mock_get_rate.assert_called_once_with("EUR")
-
-    @patch('src.external_api.get_exchange_rate')
-    def test_convert_usd_transaction_with_fallback(self, mock_get_rate):
-        """Тест использования запасного курса при ошибке API."""
-        mock_get_rate.side_effect = ValueError("API error")
-
-        transaction = {
-            "operationAmount": {
-                "amount": "100.00",
-                "currency": {"code": "USD"}
-            }
-        }
-        result = convert_to_ruble(transaction)
-
-        # Должен использовать запасной курс 90.0
-        assert result == 100.00 * 90.0
-
-    @patch('src.external_api.get_exchange_rate')
-    def test_convert_usd_transaction_success(self, mock_get_rate):
-        """Тест успешной конвертации USD транзакции с Mock."""
-        mock_get_rate.return_value = 90.5
-
-        transaction = {
-            "operationAmount": {
-                "amount": "100.00",
-                "currency": {"code": "USD"}
-            }
-        }
-        result = convert_to_ruble(transaction)
-
-        assert result == 100.00 * 90.5
-        mock_get_rate.assert_called_once_with("USD")
-
-    @patch('src.external_api.requests.get')
-    def test_get_exchange_rate_success(self, mock_get):
-        """Тест успешного получения курса валют через API."""
-        # Создаём мок-ответ
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "rates": {"RUB": 92.3}
-        }
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Вызываем функцию
-        rate = get_exchange_rate("USD")
-
-        # Проверяем результаты
-        assert rate == 92.3
-        mock_get.assert_called_once_with("https://api.exchangerate-api.com/v4/latest/USD")
-
-    @patch('src.external_api.requests.get')
-    def test_get_exchange_rate_error(self, mock_get):
-        """Тест обработки ошибки API."""
-        mock_get.side_effect = Exception("Connection error")
-
-        with pytest.raises(ValueError, match="Failed to fetch exchange rate"):
-            get_exchange_rate("USD")
-
     def test_convert_unknown_currency(self):
-        """Тест конвертации неизвестной валюты."""
+        """Тест конвертации неизвестной валюты (должен вернуть 0)."""
         transaction = {
             "operationAmount": {
                 "amount": "100.00",
@@ -122,24 +48,118 @@ class TestExternalAPI:
         result = convert_to_ruble(transaction)
         assert result == 0.0
 
+    @patch('src.external_api.os.getenv')
+    def test_missing_api_key(self, mock_getenv):
+        """Тест отсутствия API ключа."""
+        mock_getenv.return_value = None
+
+        transaction = {
+            "operationAmount": {
+                "amount": "100.00",
+                "currency": {"code": "USD"}
+            }
+        }
+
+        with pytest.raises(ValueError, match="API key not found"):
+            convert_to_ruble(transaction)
+
     @patch('src.external_api.requests.get')
-    def test_get_exchange_rate_no_rub_rate(self, mock_get):
-        """Тест обработки отсутствия курса RUB в ответе API (строка 33)."""
+    @patch('src.external_api.os.getenv')
+    def test_convert_usd_success(self, mock_getenv, mock_get):
+        """Тест успешной конвертации USD через API."""
+        # Настраиваем моки
+        mock_getenv.return_value = "fake_api_key"
+
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "rates": {}  # Пустой словарь, нет RUB
+            "success": True,
+            "result": 9000.0  # 100 USD * 90 RUB
         }
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        with pytest.raises(ValueError, match="RUB rate not found"):
-            get_exchange_rate("USD")
+        transaction = {
+            "operationAmount": {
+                "amount": "100.00",
+                "currency": {"code": "USD"}
+            }
+        }
+
+        result = convert_to_ruble(transaction)
+
+        # Проверяем результат
+        assert result == 9000.0
+
+        # Проверяем что запрос был сделан правильно
+        mock_get.assert_called_once()
+        args, kwargs = mock_get.call_args
+        assert args[0] == "https://api.apilayer.com/exchangerates_data/convert"
+        assert kwargs["params"] == {"to": "RUB", "from": "USD", "amount": 100.0}
+        assert kwargs["headers"] == {"apikey": "fake_api_key"}
 
     @patch('src.external_api.requests.get')
-    def test_get_exchange_rate_request_exception(self, mock_get):
-        """Тест обработки RequestException (строка 39)."""
-        from requests.exceptions import RequestException
-        mock_get.side_effect = RequestException("Connection failed")
+    @patch('src.external_api.os.getenv')
+    def test_convert_eur_success(self, mock_getenv, mock_get):
+        """Тест успешной конвертации EUR через API."""
+        mock_getenv.return_value = "fake_api_key"
 
-        with pytest.raises(ValueError, match="Failed to fetch exchange rate"):
-            get_exchange_rate("USD")
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "success": True,
+            "result": 5000.0  # 50 EUR * 100 RUB
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        transaction = {
+            "operationAmount": {
+                "amount": "50.00",
+                "currency": {"code": "EUR"}
+            }
+        }
+
+        result = convert_to_ruble(transaction)
+        assert result == 5000.0
+
+    @patch('src.external_api.requests.get')
+    @patch('src.external_api.os.getenv')
+    def test_api_error_response(self, mock_getenv, mock_get):
+        """Тест обработки ошибки от API."""
+        mock_getenv.return_value = "fake_api_key"
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "success": False,
+            "error": {
+                "info": "Invalid API key"
+            }
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        transaction = {
+            "operationAmount": {
+                "amount": "100.00",
+                "currency": {"code": "USD"}
+            }
+        }
+
+        result = convert_to_ruble(transaction)
+        assert result == 0.0
+
+    @patch('src.external_api.requests.get')
+    @patch('src.external_api.os.getenv')
+    def test_network_error(self, mock_getenv, mock_get):
+        """Тест обработки сетевой ошибки."""
+        mock_getenv.return_value = "fake_api_key"
+        mock_get.side_effect = Exception("Network error")
+
+        transaction = {
+            "operationAmount": {
+                "amount": "100.00",
+                "currency": {"code": "USD"}
+            }
+        }
+
+        result = convert_to_ruble(transaction)
+        assert result == 0.0

@@ -1,5 +1,5 @@
 """
-Модуль для работы с внешним API конвертации валют.
+Модуль для работы с внешним API конвертации валют (apilayer.com).
 """
 import os
 import requests
@@ -10,41 +10,9 @@ from typing import Dict, Any
 load_dotenv()
 
 
-def get_exchange_rate(base_currency: str) -> float:
-    """
-    Получает курс валюты к рублю через API.
-
-    Args:
-        base_currency: Базовая валюта (USD или EUR)
-
-    Returns:
-        Курс валюты к рублю
-    """
-    # Используем бесплатный API без ключа
-    url = f"https://api.exchangerate-api.com/v4/latest/{base_currency}"
-
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-
-        rub_rate = data["rates"].get("RUB")
-        if not rub_rate:
-            raise ValueError(f"RUB rate not found for {base_currency}")
-
-        return rub_rate
-
-    except requests.RequestException as e:
-        # Преобразуем RequestException в ValueError
-        raise ValueError(f"Failed to fetch exchange rate: {str(e)}")
-    except Exception as e:
-        # Любые другие ошибки тоже преобразуем в ValueError
-        raise ValueError(f"Failed to fetch exchange rate: {str(e)}")
-
-
 def convert_to_ruble(transaction: Dict[str, Any]) -> float:
     """
-    Конвертирует сумму транзакции в рубли.
+    Конвертирует сумму транзакции в рубли, используя API apilayer.
 
     Args:
         transaction: Словарь с данными о транзакции
@@ -62,15 +30,45 @@ def convert_to_ruble(transaction: Dict[str, Any]) -> float:
         return amount
 
     # Для USD и EUR конвертируем через API
-    if currency in ["USD", "EUR"]:
-        try:
-            rate = get_exchange_rate(currency)
-            return amount * rate
-        except ValueError as e:
-            # В случае ошибки API используем запасной курс
-            print(f"Warning: Using fallback rate for {currency}: {e}")
-            fallback_rates = {"USD": 90.0, "EUR": 100.0}
-            return amount * fallback_rates.get(currency, 90.0)
+    if currency not in ["USD", "EUR"]:
+        return 0.0
 
-    # Если неизвестная валюта - возвращаем 0
-    return 0.0
+    # Получаем API-ключ из переменных окружения
+    api_key = os.getenv("EXCHANGE_API_KEY")
+    if not api_key:
+        raise ValueError("API key not found. Check your .env file.")
+
+    # Формируем запрос к API apilayer (эндпоинт convert)
+    url = "https://api.apilayer.com/exchangerates_data/convert"
+
+    params = {
+        "to": "RUB",
+        "from": currency,
+        "amount": amount
+    }
+
+    headers = {
+        "apikey": api_key  # Ключ передается в заголовке
+    }
+
+    try:
+        # Отправляем запрос
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        # Проверяем успешность запроса
+        if not data.get("success"):
+            error_info = data.get('error', {}).get('info', 'Unknown API error')
+            raise ValueError(f"API error: {error_info}")
+
+        # Возвращаем готовый результат конвертации (уже в рублях)
+        return float(data["result"])
+
+    except requests.RequestException as e:
+        # В случае ошибки сети возвращаем 0 (по условию задания)
+        print(f"Network error during currency conversion: {e}")
+        return 0.0
+    except (KeyError, ValueError) as e:
+        print(f"Error parsing API response: {e}")
+        return 0.0
