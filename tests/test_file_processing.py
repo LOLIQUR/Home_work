@@ -1,9 +1,9 @@
 """
 Тесты для модуля file_processing.
 """
-import pytest
-import pandas as pd
-from unittest.mock import patch, MagicMock
+
+from unittest.mock import MagicMock, patch
+
 from src.file_processing import read_csv, read_excel
 
 

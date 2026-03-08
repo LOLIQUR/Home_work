@@ -1,8 +1,10 @@
 """
 Тесты для модуля external_api.
 """
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from src.external_api import convert_to_ruble
 
 

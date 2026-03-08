@@ -2,9 +2,10 @@
 Модуль для работы с внешним API конвертации валют (apilayer.com).
 """
 import os
+from typing import Any, Dict
+
 import requests
 from dotenv import load_dotenv
-from typing import Dict, Any
 
 # Загружаем переменные окружения из .env файла
 load_dotenv()

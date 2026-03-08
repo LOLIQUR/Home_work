@@ -4,7 +4,7 @@
 import json
 import logging
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 # Настройка логгера для модуля utils
 logger = logging.getLogger("utils")
