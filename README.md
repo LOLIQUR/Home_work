@@ -95,6 +95,42 @@ print(f'Загружено {len(transactions)} транзакций')
 - 4 теста с использованием Mock и patch
 - 100% покрытие кода
 
+## Модуль search
+
+### Функции
+
+#### `filter_by_description(transactions, search_string)`
+Возвращает список транзакций, в описании которых встречается искомая строка (регистронезависимо).
+
+**Пример:**
+```python
+from src.search import filter_by_description
+result = filter_by_description(transactions, "перевод")
+```
+
+#### `count_by_categories(transactions, categories)`
+Подсчитывает количество транзакций по заданным категориям на основе поля `description`.
+
+**Пример:**
+```python
+from src.search import count_by_categories
+result = count_by_categories(transactions, ["перевод", "вклад"])
+```
+
+## Интерфейс командной строки
+
+Запустите `main.py`, чтобы использовать интерактивное меню:
+```bash
+python main.py
+```
+
+Программа позволяет:
+- Выбрать источник данных (JSON, CSV, Excel)
+- Фильтровать по статусу
+- Сортировать по дате
+- Фильтровать по рублёвым операциям
+- Искать по слову в описании
+
 ## Команда проекта
 
 - Семенов Данил <mrjunkboy@vk.com>
