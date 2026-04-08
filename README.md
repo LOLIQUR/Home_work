@@ -6,21 +6,25 @@
 - Фильтрацию транзакций по статусу
 - Сортировку операций по дате
 - Форматирование финансовой информации
+- Генерацию JSON-данных для веб-страниц
+- Сервисы поиска транзакций
+- Отчёты по категориям
 
 ## Установка:
 
 1. Клонируйте репозиторий:
-```
+```bash
 git clone https://github.com/LOLIQUR/House_Work.git
 cd House_Work
 ```
+
 2. Установите зависимости через Poetry:
-```
+```bash
 poetry install
 ```
 
 3. Активируйте виртуальное окружение:
-```
+```bash
 poetry shell
 ```
 
@@ -29,22 +33,63 @@ poetry shell
 ### Основные функции:
 
 1. Маскировка данных
-```
+```python
 print(get_mask_card_number("1234567890123456"))  # "1234 56** **** 3456"
 print(get_mask_account("40817810099910004312"))  # "**4312"
 ```
 
 2. Обработка транзакций
-```
+```python
 transactions = [{'id': 1, 'state': 'EXECUTED', 'date': '2023-01-01'}]
 filtered = filter_by_state(transactions)
 sorted = sort_by_date(transactions)
 ```
 
 3. Форматирование
-```
+```python
 print(mask_account_card("Visa 1234567890123456"))  # "Visa 1234 56** **** 3456"
 print(get_date("2023-01-01T12:00:00"))  # "01.01.2023"
+```
+
+## Курсовая работа
+
+### Модуль views (Веб-страницы)
+
+#### `main_page(date_str: str) -> str`
+Генерирует JSON-ответ для главной страницы.
+
+**Параметры:**
+- `date_str` — дата и время в формате `YYYY-MM-DD HH:MM:SS`
+
+**Возвращает JSON с:**
+- Приветствие (Доброе утро/день/вечер/ночь)
+- Данные по картам (последние 4 цифры, траты, кешбэк)
+- Топ-5 транзакций по сумме
+- Курсы валют (USD, EUR)
+- Цены акций S&P500
+
+### Модуль services (Сервисы)
+
+#### `simple_search(transactions: list, query: str) -> str`
+Ищет транзакции, содержащие заданную строку в описании или категории.
+
+### Модуль reports (Отчёты)
+
+#### `spending_by_category(transactions, category, date=None) -> dict`
+Возвращает траты по заданной категории за последние 3 месяца.
+
+### Тестирование
+
+```bash
+# Запуск всех тестов
+pytest tests/ -v
+
+# Проверка покрытия
+pytest --cov=src --cov-report=html
+
+# Проверка линтеров
+flake8 src/ tests/
+isort src/ tests/ --check
 ```
 
 ## Команда проекта
